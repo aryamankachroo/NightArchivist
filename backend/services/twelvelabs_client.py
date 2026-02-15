@@ -35,12 +35,16 @@ For each event provide:
 Return ONLY a JSON object with an "events" array. No other text."""
 
 
+# Video indexing/analysis can take several minutes; use a long read timeout.
+TWELVELABS_TIMEOUT_SECONDS = 600  # 10 minutes
+
+
 def get_client() -> TwelveLabs:
     """Get TwelveLabs client with API key from env."""
     api_key = os.getenv("TWELVELABS_API_KEY")
     if not api_key:
         raise ValueError("TWELVELABS_API_KEY environment variable is required")
-    return TwelveLabs(api_key=api_key)
+    return TwelveLabs(api_key=api_key, timeout=TWELVELABS_TIMEOUT_SECONDS)
 
 
 def get_or_create_index(client: TwelveLabs) -> str:

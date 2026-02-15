@@ -111,7 +111,7 @@ export default function ResultsPage() {
     result.case_summary.confidence >= 0.7
       ? "bg-green-500/20 text-green-400 border-green-500/30"
       : result.case_summary.confidence >= 0.4
-      ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+      ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/30"
       : "bg-red-500/20 text-red-400 border-red-500/30";
 
   const formatDuration = (seconds: number) => {
@@ -122,7 +122,7 @@ export default function ResultsPage() {
 
   const getPriority = (confidence: number) => {
     if (confidence < 0.5) return { label: "High", color: "bg-red-500/20 text-red-400 border-red-500/40" };
-    if (confidence < 0.7) return { label: "Med", color: "bg-amber-500/20 text-amber-400 border-amber-500/40" };
+    if (confidence < 0.7) return { label: "Med", color: "bg-cyan-500/20 text-cyan-400 border-cyan-500/40" };
     return { label: "Low", color: "bg-zinc-500/20 text-zinc-400 border-zinc-500/40" };
   };
 
@@ -170,15 +170,15 @@ export default function ResultsPage() {
   const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-zinc-950 to-black">
+    <div className="min-h-screen bg-gradient-to-b from-black via-zinc-950 to-black bg-grid-pattern">
       {/* Header */}
-      <div className="border-b border-white/10 bg-black/40 backdrop-blur-sm sticky top-0 z-50">
+      <div className="border-b border-white/10 glass-panel sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-5">
           <div className="flex items-center justify-between mb-3">
-            <h1 className="text-3xl font-serif text-amber-400">Night Archivist</h1>
+            <h1 className="text-3xl font-serif text-cyan-400">Night Archivist</h1>
             <button
               onClick={() => router.push("/")}
-              className="px-5 py-2 bg-amber-500/10 hover:bg-amber-500/20 hover:shadow-lg hover:shadow-amber-500/20 border border-amber-500/30 rounded-lg text-amber-400 font-medium transition-all"
+              className="px-5 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 hover:shadow-lg hover:shadow-cyan-500/20 border border-cyan-500/30 rounded-lg text-cyan-400 font-medium transition-all"
             >
               Start New Case
             </button>
@@ -188,7 +188,7 @@ export default function ResultsPage() {
           <div className="flex items-center gap-4 flex-wrap text-xs font-mono">
             <div>
               <span className="text-zinc-500">CASE FILE:</span>
-              <span className="ml-2 text-amber-400 font-semibold">#{caseId.slice(0, 8).toUpperCase()}</span>
+              <span className="ml-2 text-cyan-400 font-semibold">#{caseId.slice(0, 8).toUpperCase()}</span>
             </div>
             <div className="h-3 w-px bg-white/10" />
             <div>
@@ -229,8 +229,8 @@ export default function ResultsPage() {
             {/* TOP 2×2 GRID */}
             <div className="grid grid-cols-2 gap-4">
               {/* Confidence Dial */}
-              <div className="col-span-2 sm:col-span-1 bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-amber-400/30 hover:bg-white/[0.06] transition-all">
-                <h2 className="text-base font-serif text-amber-400 mb-3">Confidence</h2>
+              <div className="col-span-2 sm:col-span-1 glass-panel glass-panel-glow rounded-2xl p-5 transition-all">
+                <h2 className="text-base font-serif text-cyan-400 mb-3">Confidence</h2>
                 <div className="flex items-center justify-center py-2">
                   <div className="relative w-28 h-28">
                     <svg className="w-28 h-28 transform -rotate-90">
@@ -246,7 +246,7 @@ export default function ResultsPage() {
                         strokeDashoffset={`${2 * Math.PI * 48 * (1 - result.case_summary.confidence)}`}
                         className={`${
                           result.case_summary.confidence >= 0.7 ? 'text-green-500' :
-                          result.case_summary.confidence >= 0.4 ? 'text-amber-500' : 'text-red-500'
+                          result.case_summary.confidence >= 0.4 ? 'text-cyan-500' : 'text-red-500'
                         } transition-all duration-1000`}
                         strokeLinecap="round"
                       />
@@ -263,8 +263,8 @@ export default function ResultsPage() {
               </div>
 
               {/* Evidence Coverage + Key Findings Combined */}
-              <div className="col-span-2 sm:col-span-1 bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-amber-400/30 hover:bg-white/[0.06] transition-all">
-                <h2 className="text-base font-serif text-amber-400 mb-3">Evidence</h2>
+              <div className="col-span-2 sm:col-span-1 glass-panel glass-panel-glow rounded-2xl p-5 transition-all">
+                <h2 className="text-base font-serif text-cyan-400 mb-3">Evidence</h2>
                 <div className="space-y-2.5 text-xs">
                   <div className="flex items-center justify-between">
                     <span className="text-zinc-400">Video</span>
@@ -311,12 +311,12 @@ export default function ResultsPage() {
             </div>
 
             {/* Case Narrative - Text Summary */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-amber-400/30 hover:bg-white/[0.06] transition-all">
+            <div className="glass-panel glass-panel-glow rounded-2xl p-5 transition-all">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base font-serif text-amber-400">Case Narrative</h2>
+                <h2 className="text-base font-serif text-cyan-400">Case Narrative</h2>
                 <button
                   onClick={copyNarrative}
-                  className="flex items-center gap-1.5 px-2.5 py-1 text-xs bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded text-amber-400 transition-all"
+                  className="flex items-center gap-1.5 px-2.5 py-1 text-xs bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 rounded text-cyan-400 transition-all"
                 >
                   {copiedNarrative ? (
                     <>
@@ -341,15 +341,15 @@ export default function ResultsPage() {
             </div>
 
             {/* Evidence Preview */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-amber-400/30 hover:bg-white/[0.06] transition-all">
-              <h2 className="text-base font-serif text-amber-400 mb-3">Source Files</h2>
+            <div className="glass-panel glass-panel-glow rounded-2xl p-5 transition-all">
+              <h2 className="text-base font-serif text-cyan-400 mb-3">Source Files</h2>
               <div className="space-y-2">
                 <button
                   onClick={() => setShowEvidenceModal('video')}
-                  className="w-full flex items-center justify-between p-3 bg-zinc-900/50 hover:bg-zinc-900/70 border border-white/10 hover:border-amber-400/30 rounded-lg transition-all text-left"
+                  className="w-full flex items-center justify-between p-3 bg-zinc-900/50 hover:bg-zinc-900/70 border border-white/10 hover:border-cyan-400/30 rounded-lg transition-all text-left"
                 >
                   <div className="flex items-center gap-2.5">
-                    <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
                     <div>
@@ -363,10 +363,10 @@ export default function ResultsPage() {
                 </button>
                 <button
                   onClick={() => setShowEvidenceModal('text')}
-                  className="w-full flex items-center justify-between p-3 bg-zinc-900/50 hover:bg-zinc-900/70 border border-white/10 hover:border-amber-400/30 rounded-lg transition-all text-left"
+                  className="w-full flex items-center justify-between p-3 bg-zinc-900/50 hover:bg-zinc-900/70 border border-white/10 hover:border-cyan-400/30 rounded-lg transition-all text-left"
                 >
                   <div className="flex items-center gap-2.5">
-                    <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                     <div>
@@ -382,17 +382,17 @@ export default function ResultsPage() {
             </div>
 
             {/* Detective's Monologue - Special Card */}
-            <div className="bg-gradient-to-br from-amber-500/5 to-orange-500/5 border border-amber-500/20 rounded-2xl p-5 hover:border-amber-400/40 hover:shadow-lg hover:shadow-amber-500/10 transition-all">
+            <div className="bg-gradient-to-br from-cyan-500/5 to-cyan-600/5 border border-cyan-500/20 rounded-2xl p-5 hover:border-cyan-400/40 hover:shadow-lg hover:shadow-cyan-500/10 transition-all">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                   </svg>
-                  <h2 className="text-lg font-serif text-amber-400">Detective's Monologue</h2>
+                  <h2 className="text-lg font-serif text-cyan-400">Detective's Monologue</h2>
                 </div>
                 <div className="flex items-center gap-2">
                   {audioDuration > 0 && (
-                    <span className="text-xs text-amber-400/70 font-mono">{formatDuration(audioDuration)}</span>
+                    <span className="text-xs text-cyan-400/70 font-mono">{formatDuration(audioDuration)}</span>
                   )}
                 </div>
               </div>
@@ -404,7 +404,7 @@ export default function ResultsPage() {
                   return (
                     <div
                       key={i}
-                      className="flex-1 bg-amber-500/30 rounded-sm transition-all hover:bg-amber-500/50"
+                      className="flex-1 bg-cyan-500/30 rounded-sm transition-all hover:bg-cyan-500/50"
                       style={{ height: `${height}%` }}
                     />
                   );
@@ -419,13 +419,13 @@ export default function ResultsPage() {
               />
               
               <div className="flex items-center justify-between mt-3">
-                <span className="px-2 py-1 bg-amber-500/10 border border-amber-500/30 rounded text-amber-400 text-xs font-medium">
+                <span className="px-2 py-1 bg-cyan-500/10 border border-cyan-500/30 rounded text-cyan-400 text-xs font-medium">
                   AI Narration
                 </span>
                 <a
                   href={result.narration_url}
                   download="narration.mp3"
-                  className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 transition-colors"
+                  className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -439,12 +439,12 @@ export default function ResultsPage() {
           {/* RIGHT PANEL - SCROLLABLE */}
           <div className="lg:col-span-8 space-y-5">
             {/* Key Findings */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-amber-400/30 hover:bg-white/[0.06] transition-all">
-              <h2 className="text-xl font-serif text-amber-400 mb-3">Key Findings</h2>
+            <div className="glass-panel glass-panel-glow rounded-2xl p-5 transition-all">
+              <h2 className="text-xl font-serif text-cyan-400 mb-3">Key Findings</h2>
               <ul className="space-y-2">
                 {keyFindings.map((finding, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm text-zinc-200">
-                    <svg className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-cyan-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                     <span>{finding}</span>
@@ -454,15 +454,15 @@ export default function ResultsPage() {
             </div>
 
             {/* Investigation Log - Timeline with Spine */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-amber-400/30 hover:bg-white/[0.06] transition-all">
+            <div className="glass-panel glass-panel-glow rounded-2xl p-6 transition-all">
               <div className="flex items-center justify-between mb-5">
-                <h2 className="text-2xl font-serif text-amber-400">Investigation Log</h2>
+                <h2 className="text-2xl font-serif text-cyan-400">Investigation Log</h2>
                 <span className="text-sm text-zinc-500">{result.timeline.length} {pluralize(result.timeline.length, 'entry', 'entries')}</span>
               </div>
               
               <div className="relative">
                 {/* Vertical Timeline Spine */}
-                <div className="absolute left-7 top-0 bottom-0 w-0.5 bg-gradient-to-b from-amber-500/50 via-amber-500/30 to-transparent" />
+                <div className="absolute left-7 top-0 bottom-0 w-0.5 bg-gradient-to-b from-cyan-500/50 via-cyan-500/30 to-transparent" />
                 
                 <div className="space-y-4">
                   {result.timeline.map((entry, idx) => {
@@ -476,17 +476,17 @@ export default function ResultsPage() {
                     return (
                       <div key={entry.time + entry.event_id} className="relative pl-16">
                         {/* Timeline Dot */}
-                        <div className={`absolute left-5 top-2 w-4 h-4 rounded-full bg-amber-500 border-2 border-black shadow-lg shadow-amber-500/50 ${idx === 0 ? 'pulse-dot' : ''}`} />
+                        <div className={`absolute left-5 top-2 w-4 h-4 rounded-full bg-cyan-500 border-2 border-black shadow-lg shadow-cyan-500/50 ${idx === 0 ? 'pulse-dot' : ''}`} />
                         
                         {/* Event Card */}
-                        <div className="bg-zinc-900/50 border border-white/10 rounded-lg overflow-hidden hover:border-amber-400/30 hover:bg-zinc-900/70 transition-all">
+                        <div className="bg-zinc-900/50 border border-white/10 rounded-lg overflow-hidden hover:border-cyan-400/30 hover:bg-zinc-900/70 transition-all">
                           <button
                             onClick={() => toggleEvent(entry.event_id)}
                             className="w-full text-left p-4 flex items-start justify-between gap-4 cursor-pointer"
                           >
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-3 mb-1">
-                                <span className="px-2 py-0.5 bg-amber-500/10 border border-amber-500/30 rounded text-amber-400 font-mono text-xs font-semibold">
+                                <span className="px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/30 rounded text-cyan-400 font-mono text-xs font-semibold">
                                   {entry.time}
                                 </span>
                                 <span className="text-xs text-zinc-500">
@@ -513,10 +513,10 @@ export default function ResultsPage() {
                               {/* Time Range Badge */}
                               {ev.t_start !== ev.t_end && (
                                 <div className="flex items-center gap-2">
-                                  <span className="px-2 py-1 bg-amber-500/10 border border-amber-500/30 rounded text-amber-400 text-xs font-mono">
+                                  <span className="px-2 py-1 bg-cyan-500/10 border border-cyan-500/30 rounded text-cyan-400 text-xs font-mono">
                                     {ev.t_start} – {ev.t_end}
                                   </span>
-                                  <button className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 transition-colors">
+                                  <button className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors">
                                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                                     </svg>
@@ -543,13 +543,13 @@ export default function ResultsPage() {
                               
                               {/* Actions */}
                               <div className="flex items-center gap-2 pt-2 border-t border-white/5">
-                                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-amber-400/30 rounded text-zinc-400 hover:text-amber-400 text-xs transition-all">
+                                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-cyan-400/30 rounded text-zinc-400 hover:text-cyan-400 text-xs transition-all">
                                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                                   </svg>
                                   Bookmark
                                 </button>
-                                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-amber-400/30 rounded text-zinc-400 hover:text-amber-400 text-xs transition-all">
+                                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 hover:border-cyan-400/30 rounded text-zinc-400 hover:text-cyan-400 text-xs transition-all">
                                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                   </svg>
@@ -567,8 +567,8 @@ export default function ResultsPage() {
             </div>
 
             {/* Entities */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-amber-400/30 hover:bg-white/[0.06] transition-all">
-              <h2 className="text-2xl font-serif text-amber-400 mb-4">Entities</h2>
+            <div className="glass-panel glass-panel-glow rounded-2xl p-5 transition-all">
+              <h2 className="text-2xl font-serif text-cyan-400 mb-4">Entities</h2>
               {result.entities.length > 0 ? (
                 <div className="space-y-4">
                   {["person", "place", "object"].map((type) => {
@@ -583,7 +583,7 @@ export default function ResultsPage() {
                           {filtered.map((entity) => (
                             <span
                               key={entity.id}
-                              className="px-3 py-1.5 bg-zinc-900/50 border border-white/10 rounded-lg text-zinc-200 text-sm hover:border-amber-400/40 hover:bg-zinc-900/70 transition-all cursor-default"
+                              className="px-3 py-1.5 bg-zinc-900/50 border border-white/10 rounded-lg text-zinc-200 text-sm hover:border-cyan-400/40 hover:bg-zinc-900/70 transition-all cursor-default"
                             >
                               {entity.name}
                             </span>
@@ -604,8 +604,8 @@ export default function ResultsPage() {
             </div>
 
             {/* Contradictions */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-red-400/20 hover:bg-white/[0.06] transition-all">
-              <h2 className="text-2xl font-serif text-amber-400 mb-4">Contradictions</h2>
+            <div className="glass-panel glass-panel-glow rounded-2xl p-5 border-red-500/20 transition-all">
+              <h2 className="text-2xl font-serif text-cyan-400 mb-4">Contradictions</h2>
               {result.contradictions.length > 0 ? (
                 <div className="space-y-3">
                   {result.contradictions.map((c, i) => (
@@ -648,10 +648,10 @@ export default function ResultsPage() {
             </div>
 
             {/* Leads to Follow */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-amber-400/30 hover:bg-white/[0.06] transition-all">
+            <div className="glass-panel glass-panel-glow rounded-2xl p-5 transition-all">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-serif text-amber-400">Leads to Follow</h2>
-                <span className="px-2 py-1 bg-amber-500/10 border border-amber-500/30 rounded text-amber-400 text-xs font-semibold">
+                <h2 className="text-2xl font-serif text-cyan-400">Leads to Follow</h2>
+                <span className="px-2 py-1 bg-cyan-500/10 border border-cyan-500/30 rounded text-cyan-400 text-xs font-semibold">
                   {result.open_questions.length} {pluralize(result.open_questions.length, 'lead')}
                 </span>
               </div>
@@ -660,7 +660,7 @@ export default function ResultsPage() {
                   {result.open_questions.map((q, i) => (
                     <div
                       key={i}
-                      className="bg-zinc-900/50 border border-white/10 rounded-lg p-4 hover:border-amber-400/30 hover:bg-zinc-900/70 transition-all"
+                      className="bg-zinc-900/50 border border-white/10 rounded-lg p-4 hover:border-cyan-400/30 hover:bg-zinc-900/70 transition-all"
                     >
                       <div className="flex items-start gap-3">
                         <span className={`px-2 py-1 rounded text-xs font-semibold border shrink-0 ${priority.color}`}>
@@ -706,7 +706,7 @@ export default function ResultsPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-5 border-b border-white/10">
-              <h3 className="text-lg font-serif text-amber-400">
+              <h3 className="text-lg font-serif text-cyan-400">
                 {showEvidenceModal === 'video' ? 'Video Evidence' : 'Text Evidence'}
               </h3>
               <button
@@ -722,7 +722,7 @@ export default function ResultsPage() {
               {showEvidenceModal === 'video' ? (
                 <div className="text-center">
                   <div className="bg-zinc-800/50 border border-white/10 rounded-lg p-8">
-                    <svg className="w-16 h-16 mx-auto mb-4 text-amber-400/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-16 h-16 mx-auto mb-4 text-cyan-400/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
                     <p className="text-zinc-400 text-sm mb-2">Video footage analyzed</p>
@@ -739,7 +739,7 @@ export default function ResultsPage() {
                         .slice(0, 5)
                         .map((event, i) => (
                           <div key={i} className="p-3 bg-zinc-900/50 rounded border border-white/5">
-                            <p className="text-amber-400 text-xs mb-1">{event.t_start}</p>
+                            <p className="text-cyan-400 text-xs mb-1">{event.t_start}</p>
                             <p className="text-zinc-200">{event.description}</p>
                           </div>
                         ))

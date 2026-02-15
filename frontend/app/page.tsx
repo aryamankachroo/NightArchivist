@@ -49,63 +49,81 @@ export default function UploadPage() {
 
       router.push(`/processing/${case_id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      if (message === "Failed to fetch" || message.includes("fetch")) {
+        setError(
+          "Cannot reach the backend. Start it with: cd backend && python -m uvicorn main:app --reload --host 0.0.0.0"
+        );
+      } else {
+        setError(message);
+      }
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8">
-      <div className="w-full max-w-md">
-        <h1 className="text-3xl font-serif text-noir-accent mb-2 text-center">
-          Night Archivist
+    <div className="min-h-screen flex flex-col items-center justify-center p-8 relative">
+      {/* Top status bar - glass morphism */}
+      <div className="absolute top-6 left-1/2 -translate-x-1/2 glass-panel glass-panel-glow px-5 py-2.5 rounded-lg flex items-center gap-3">
+        <span className="w-2 h-2 rounded-full bg-noir-accent shadow-[0_0_8px_var(--noir-accent)] animate-pulse" />
+        <span className="text-noir-muted text-sm font-medium">SYSTEM ONLINE</span>
+        <span className="text-noir-muted/60 text-xs">|</span>
+        <span className="text-noir-muted text-xs">v2.0</span>
+      </div>
+
+      <div className="w-full max-w-md mt-8">
+        <h1 className="text-3xl font-serif text-center mb-2">
+          <span className="text-white">Night</span>{" "}
+          <span className="text-noir-accent">Archivist</span>
         </h1>
-        <p className="text-noir-muted text-center mb-12 text-sm">
-          AI investigative assistant. Upload evidence. Reconstruct the truth.
+        <p className="text-noir-muted text-center mb-10 text-sm">
+          Reconstruct truth from fragmented evidence.
         </p>
 
         <form
           onSubmit={handleSubmit}
-          className="bg-noir-card border border-noir-border rounded p-8 space-y-6"
+          className="glass-panel glass-panel-glow rounded-2xl p-8 space-y-7"
         >
-          <div>
-            <label className="block text-sm text-noir-muted mb-2">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-noir-text">
               Video evidence
             </label>
             <input
               ref={videoRef}
               type="file"
               accept=".mp4,.mov,.avi,.mkv,.webm"
-              className="block w-full text-sm text-noir-muted file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-noir-accent file:text-noir-bg file:font-medium"
+              className="block w-full text-sm text-noir-muted file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border file:border-cyan-400/40 file:bg-cyan-500/10 file:text-cyan-400 file:font-medium file:cursor-pointer hover:file:bg-cyan-500/20 hover:file:border-cyan-400/60 transition-colors"
             />
           </div>
 
-          <div>
-            <label className="block text-sm text-noir-muted mb-2">
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-noir-text">
               Text evidence
             </label>
             <input
               ref={textRef}
               type="file"
               accept=".txt"
-              className="block w-full text-sm text-noir-muted file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-noir-accent file:text-noir-bg file:font-medium"
+              className="block w-full text-sm text-noir-muted file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border file:border-cyan-400/40 file:bg-cyan-500/10 file:text-cyan-400 file:font-medium file:cursor-pointer hover:file:bg-cyan-500/20 hover:file:border-cyan-400/60 transition-colors"
             />
           </div>
 
           {error && (
-            <p className="text-noir-danger text-sm bg-noir-danger/10 border border-noir-danger/30 rounded px-3 py-2">
+            <p className="text-red-400 text-sm bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3">
               {error}
             </p>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 px-4 bg-noir-accent text-noir-bg font-medium rounded hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? "Starting..." : "Start case"}
-          </button>
+          <div className="pt-2">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3.5 px-5 bg-cyan-400 text-black font-semibold rounded-lg hover:bg-cyan-300 hover:shadow-[0_0_24px_rgba(34,211,238,0.35)] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            >
+              {loading ? "Starting..." : "Start case"}
+            </button>
+          </div>
         </form>
       </div>
     </div>

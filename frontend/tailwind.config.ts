@@ -10,14 +10,18 @@ const config: Config = {
     extend: {
       colors: {
         noir: {
-          bg: "#0d0d0d",
-          card: "#1a1a1a",
-          border: "#333",
+          bg: "#0a0a0f",
+          card: "rgba(26, 26, 36, 0.6)",
+          border: "rgba(255, 255, 255, 0.08)",
           text: "#e5e5e5",
-          muted: "#888",
-          accent: "#c9a227",
-          danger: "#8b2500",
+          muted: "#94a3b8",
+          accent: "#22d3ee",
+          "accent-glow": "rgba(34, 211, 238, 0.4)",
+          danger: "#ef4444",
         },
+      },
+      backdropBlur: {
+        xs: "2px",
       },
       fontFamily: {
         serif: ["Georgia", "Cambria", "Times New Roman", "serif"],

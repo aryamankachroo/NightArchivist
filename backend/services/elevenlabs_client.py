@@ -14,13 +14,16 @@ load_dotenv(dotenv_path=_ENV_PATH)
 NOIR_VOICE_ID = "pNInz6obpgDQGcFmaJgB"
 # Alternative: "VR6AewLTigWG4xSOukaG" (Arnold) for deeper noir
 
+# Long narration can take a while to generate; avoid read timeouts.
+ELEVENLABS_TIMEOUT_SECONDS = 420  # 7 minutes
+
 
 def get_client() -> ElevenLabs:
     """Get ElevenLabs client."""
     api_key = os.getenv("ELEVENLABS_API_KEY")
     if not api_key:
         raise ValueError("ELEVENLABS_API_KEY environment variable is required")
-    return ElevenLabs(api_key=api_key)
+    return ElevenLabs(api_key=api_key, timeout=ELEVENLABS_TIMEOUT_SECONDS)
 
 
 def text_to_speech(text: str, output_path: Path, voice_id: str = NOIR_VOICE_ID) -> Path:
