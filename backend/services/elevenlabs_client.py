@@ -3,7 +3,12 @@
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
 from elevenlabs.client import ElevenLabs
+
+# Ensure .env is loaded
+_ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(dotenv_path=_ENV_PATH)
 
 # Adam voice - good for noir/detective tone (well-known default)
 NOIR_VOICE_ID = "pNInz6obpgDQGcFmaJgB"

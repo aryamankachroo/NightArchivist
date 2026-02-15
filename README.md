@@ -78,6 +78,12 @@ If the backend is on a different host/port, create `frontend/.env.local`:
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
+## Demo modes
+
+**Full demo (no APIs):** Set `DEMO_MODE=true` — skips TwelveLabs, LLM, and ElevenLabs. Uses mock data for everything.
+
+**Hybrid (real video + audio, mock LLM):** Set `MOCK_LLM_ONLY=true` — TwelveLabs and ElevenLabs run for real; only the reasoning/fusion step (Gemini/LLM) is mocked. Use when LLM APIs are failing but TwelveLabs and ElevenLabs keys work.
+
 ## Usage
 
 1. **Upload** — Select a video file (mp4, mov, etc.) and a text file (.txt) with evidence
