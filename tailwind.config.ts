@@ -61,8 +61,6 @@ const config: Config = {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
         },
-        neon: 'hsl(var(--neon))',
-        'neon-subtle': 'hsl(var(--neon-subtle))',
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -72,12 +70,7 @@ const config: Config = {
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
         serif: ['var(--font-playfair)', 'Georgia', 'serif'],
-        mono: ['var(--font-mono)', 'ui-monospace', 'monospace'],
-      },
-      boxShadow: {
-        'glass': '0 0 0 1px hsl(var(--glass-highlight)) inset, 0 4px 24px -4px rgba(0,0,0,0.4)',
-        'neon-sm': '0 0 16px -2px hsl(var(--neon-glow))',
-        'neon-md': '0 0 24px -4px hsl(var(--neon-glow))',
+        mono: ['var(--font-mono)', 'JetBrains Mono', 'monospace'],
       },
       keyframes: {
         'accordion-down': {

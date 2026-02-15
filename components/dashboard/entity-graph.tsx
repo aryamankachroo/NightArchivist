@@ -1,315 +1,233 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { User, MapPin, Package, Zap, Info } from "lucide-react"
+import { useRef, useEffect, useState, useCallback } from "react"
 
-type EntityType = "person" | "location" | "object" | "event"
-
-type Entity = {
+interface Node {
   id: string
-  name: string
-  type: EntityType
-  mentions: number
+  label: string
+  type: "person" | "location" | "event" | "evidence"
   x: number
   y: number
+  vx: number
+  vy: number
+  radius: number
+  connections: string[]
 }
 
-type Connection = {
-  from: string
-  to: string
-  strength: number
-  label: string
+const TYPE_COLORS: Record<string, { fill: string; glow: string }> = {
+  person:   { fill: "#00F0FF", glow: "rgba(0,240,255,0.4)" },
+  location: { fill: "#A78BFA", glow: "rgba(167,139,250,0.4)" },
+  event:    { fill: "#F59E0B", glow: "rgba(245,158,11,0.4)" },
+  evidence: { fill: "#EF4444", glow: "rgba(239,68,68,0.4)" },
 }
 
-const entities: Entity[] = [
-  { id: "e1", name: "Subject A", type: "person", mentions: 4, x: 400, y: 120 },
-  { id: "e2", name: "Subject B", type: "person", mentions: 1, x: 180, y: 280 },
-  { id: "e3", name: "East Entrance", type: "location", mentions: 1, x: 620, y: 200 },
-  { id: "e4", name: "Third Floor", type: "location", mentions: 2, x: 280, y: 400 },
-  { id: "e5", name: "Server Room", type: "location", mentions: 1, x: 520, y: 350 },
-  { id: "e6", name: "Briefcase", type: "object", mentions: 2, x: 600, y: 80 },
-  { id: "e7", name: "South Stairwell", type: "location", mentions: 1, x: 150, y: 140 },
-  { id: "e8", name: "Power Grid", type: "event", mentions: 1, x: 400, y: 450 },
+const NODES: Node[] = [
+  { id: "n1", label: "Whitmore", type: "person", x: 0.48, y: 0.36, vx: 0, vy: 0, radius: 24, connections: ["n2","n3","n5"] },
+  { id: "n2", label: "Harbor Dist.", type: "location", x: 0.22, y: 0.26, vx: 0, vy: 0, radius: 19, connections: ["n1","n4","n7"] },
+  { id: "n3", label: "Doc #14", type: "evidence", x: 0.74, y: 0.22, vx: 0, vy: 0, radius: 17, connections: ["n1","n6"] },
+  { id: "n4", label: "Explosion", type: "event", x: 0.2, y: 0.62, vx: 0, vy: 0, radius: 21, connections: ["n2","n5"] },
+  { id: "n5", label: "Agent Lee", type: "person", x: 0.52, y: 0.68, vx: 0, vy: 0, radius: 19, connections: ["n1","n4","n6"] },
+  { id: "n6", label: "Warehouse", type: "location", x: 0.78, y: 0.56, vx: 0, vy: 0, radius: 18, connections: ["n3","n5"] },
+  { id: "n7", label: "Witness B", type: "person", x: 0.12, y: 0.44, vx: 0, vy: 0, radius: 15, connections: ["n2","n4"] },
 ]
-
-const connections: Connection[] = [
-  { from: "e1", to: "e3", strength: 3, label: "entered via" },
-  { from: "e1", to: "e6", strength: 2, label: "carried" },
-  { from: "e1", to: "e2", strength: 1, label: "spoke with" },
-  { from: "e1", to: "e7", strength: 1, label: "exited via" },
-  { from: "e2", to: "e4", strength: 1, label: "mentioned" },
-  { from: "e4", to: "e8", strength: 2, label: "location of" },
-  { from: "e5", to: "e4", strength: 1, label: "located on" },
-  { from: "e1", to: "e5", strength: 1, label: "attempted access" },
-]
-
-const typeStyles: Record<EntityType, { color: string; bg: string; icon: typeof User }> = {
-  person: { color: "#c9a54e", bg: "rgba(201,165,78,0.15)", icon: User },
-  location: { color: "#4ea5c9", bg: "rgba(78,165,201,0.15)", icon: MapPin },
-  object: { color: "#a5c94e", bg: "rgba(165,201,78,0.15)", icon: Package },
-  event: { color: "#c94e4e", bg: "rgba(201,78,78,0.15)", icon: Zap },
-}
-
-const typeBadgeColors: Record<EntityType, string> = {
-  person: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  location: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  object: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  event: "bg-red-500/10 text-red-400 border-red-500/20",
-}
 
 export function EntityGraph() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [selectedEntity, setSelectedEntity] = useState<Entity | null>(null)
-  const [hoveredEntity, setHoveredEntity] = useState<string | null>(null)
+  const nodesRef = useRef<Node[]>([])
+  const [hovered, setHovered] = useState<string | null>(null)
+  const [active, setActive] = useState<string | null>("n1")
+  const mouseRef = useRef({ x: -999, y: -999 })
+  const animRef = useRef(0)
+  const timeRef = useRef(0)
+
+  const init = useCallback((w: number, h: number) => {
+    nodesRef.current = NODES.map(n => ({ ...n, x: n.x * w, y: n.y * h, vx: 0, vy: 0 }))
+  }, [])
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-
     const ctx = canvas.getContext("2d")
     if (!ctx) return
 
-    const dpr = window.devicePixelRatio || 1
-    const rect = canvas.getBoundingClientRect()
-    canvas.width = rect.width * dpr
-    canvas.height = rect.height * dpr
-    ctx.scale(dpr, dpr)
+    const resize = () => {
+      const p = canvas.parentElement!
+      const rect = p.getBoundingClientRect()
+      const dpr = window.devicePixelRatio || 1
+      canvas.width = rect.width * dpr
+      canvas.height = rect.height * dpr
+      canvas.style.width = `${rect.width}px`
+      canvas.style.height = `${rect.height}px`
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      if (nodesRef.current.length === 0) init(rect.width, rect.height)
+    }
+    resize()
+    window.addEventListener("resize", resize)
 
-    // Clear
-    ctx.clearRect(0, 0, rect.width, rect.height)
+    const onMove = (e: MouseEvent) => {
+      const r = canvas.getBoundingClientRect()
+      mouseRef.current = { x: e.clientX - r.left, y: e.clientY - r.top }
+    }
+    canvas.addEventListener("mousemove", onMove)
 
-    // Scale entities to fit canvas
-    const scaleX = rect.width / 780
-    const scaleY = rect.height / 520
+    const draw = () => {
+      timeRef.current += 0.012
+      const t = timeRef.current
+      const w = canvas.width / (window.devicePixelRatio || 1)
+      const h = canvas.height / (window.devicePixelRatio || 1)
+      ctx.clearRect(0, 0, w, h)
 
-    // Draw connections
-    connections.forEach((conn) => {
-      const from = entities.find((e) => e.id === conn.from)
-      const to = entities.find((e) => e.id === conn.to)
-      if (!from || !to) return
+      // Faint grid
+      ctx.strokeStyle = "rgba(255,255,255,0.012)"
+      ctx.lineWidth = 1
+      for (let x = 0; x < w; x += 50) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke() }
+      for (let y = 0; y < h; y += 50) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke() }
 
-      const fx = from.x * scaleX
-      const fy = from.y * scaleY
-      const tx = to.x * scaleX
-      const ty = to.y * scaleY
+      const nodes = nodesRef.current
 
-      const isHighlighted =
-        hoveredEntity === conn.from || hoveredEntity === conn.to
+      // Physics
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const dx = nodes[j].x - nodes[i].x
+          const dy = nodes[j].y - nodes[i].y
+          const d = Math.sqrt(dx * dx + dy * dy) || 1
+          if (d < 90) {
+            const f = (90 - d) * 0.002
+            nodes[i].vx -= (dx / d) * f; nodes[i].vy -= (dy / d) * f
+            nodes[j].vx += (dx / d) * f; nodes[j].vy += (dy / d) * f
+          }
+        }
+        nodes[i].vx += Math.sin(t + i * 1.7) * 0.008
+        nodes[i].vy += Math.cos(t * 0.6 + i * 2.3) * 0.008
+        nodes[i].vx *= 0.97; nodes[i].vy *= 0.97
+        nodes[i].x = Math.max(40, Math.min(w - 40, nodes[i].x + nodes[i].vx))
+        nodes[i].y = Math.max(40, Math.min(h - 40, nodes[i].y + nodes[i].vy))
+      }
 
-      ctx.beginPath()
-      ctx.moveTo(fx, fy)
-      ctx.lineTo(tx, ty)
-      ctx.strokeStyle = isHighlighted
-        ? "rgba(201,165,78,0.5)"
-        : "rgba(255,255,255,0.06)"
-      ctx.lineWidth = Math.max(1, conn.strength * (isHighlighted ? 1.5 : 0.8))
-      ctx.stroke()
+      // Hover detection
+      let hovId: string | null = null
+      for (const n of nodes) {
+        const dx = mouseRef.current.x - n.x, dy = mouseRef.current.y - n.y
+        if (Math.sqrt(dx * dx + dy * dy) < n.radius + 8) { hovId = n.id; break }
+      }
 
-      // Label
-      if (isHighlighted) {
-        const mx = (fx + tx) / 2
-        const my = (fy + ty) / 2
-        ctx.font = "10px system-ui"
-        ctx.fillStyle = "rgba(201,165,78,0.7)"
+      // Edges
+      const drawn = new Set<string>()
+      for (const n of nodes) {
+        for (const cid of n.connections) {
+          const k = [n.id, cid].sort().join("-")
+          if (drawn.has(k)) continue
+          drawn.add(k)
+          const tgt = nodes.find(nd => nd.id === cid)
+          if (!tgt) continue
+          const hi = active === n.id || active === cid || hovId === n.id || hovId === cid
+
+          // Edge glow
+          if (hi) {
+            ctx.beginPath(); ctx.moveTo(n.x, n.y); ctx.lineTo(tgt.x, tgt.y)
+            ctx.strokeStyle = "rgba(0,240,255,0.04)"; ctx.lineWidth = 8; ctx.stroke()
+          }
+
+          ctx.beginPath(); ctx.moveTo(n.x, n.y); ctx.lineTo(tgt.x, tgt.y)
+          ctx.setLineDash(hi ? [5, 7] : [])
+          ctx.lineDashOffset = hi ? -t * 40 : 0
+          ctx.strokeStyle = hi ? "rgba(0,240,255,0.3)" : "rgba(255,255,255,0.03)"
+          ctx.lineWidth = hi ? 1.5 : 0.8
+          ctx.stroke()
+          ctx.setLineDash([])
+        }
+      }
+
+      // Nodes
+      for (const n of nodes) {
+        const c = TYPE_COLORS[n.type]
+        const isA = active === n.id
+        const isH = hovId === n.id
+        const pulse = isA ? 1 + Math.sin(t * 3) * 0.1 : 1
+        const r = n.radius * pulse
+
+        // Active pulse ring
+        if (isA) {
+          const phase = (t * 1.2) % 1
+          ctx.beginPath(); ctx.arc(n.x, n.y, r + 22 * phase, 0, Math.PI * 2)
+          ctx.strokeStyle = c.fill.replace(")", `,${0.25 * (1 - phase)})`)
+            .replace("rgb", "rgba").replace("#", "")
+          ctx.strokeStyle = `rgba(0,240,255,${0.25 * (1 - phase)})`
+          ctx.lineWidth = 1.5; ctx.stroke()
+        }
+
+        // Outer glow
+        const g = ctx.createRadialGradient(n.x, n.y, r * 0.2, n.x, n.y, r * 2.8)
+        g.addColorStop(0, isA ? c.glow : c.glow.replace("0.4", "0.08"))
+        g.addColorStop(1, "transparent")
+        ctx.beginPath(); ctx.arc(n.x, n.y, r * 2.8, 0, Math.PI * 2)
+        ctx.fillStyle = g; ctx.fill()
+
+        // Body
+        ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, Math.PI * 2)
+        const bg = ctx.createRadialGradient(n.x - r * 0.3, n.y - r * 0.3, 0, n.x, n.y, r)
+        bg.addColorStop(0, isA || isH ? c.glow.replace("0.4", "0.18") : "rgba(14,14,16,0.9)")
+        bg.addColorStop(1, "rgba(10,10,11,0.97)")
+        ctx.fillStyle = bg; ctx.fill()
+        ctx.strokeStyle = isA ? c.fill : isH ? c.fill + "90" : "rgba(255,255,255,0.04)"
+        ctx.lineWidth = isA ? 2 : 1; ctx.stroke()
+
+        // Center dot
+        ctx.beginPath(); ctx.arc(n.x, n.y, 3.5, 0, Math.PI * 2)
+        ctx.fillStyle = c.fill; ctx.globalAlpha = isA ? 1 : 0.5; ctx.fill(); ctx.globalAlpha = 1
+
+        // Label
+        ctx.font = `${isA || isH ? 600 : 400} 10px var(--font-mono, monospace)`
         ctx.textAlign = "center"
-        ctx.fillText(conn.label, mx, my - 6)
-      }
-    })
-
-    // Draw entities
-    entities.forEach((entity) => {
-      const ex = entity.x * scaleX
-      const ey = entity.y * scaleY
-      const style = typeStyles[entity.type]
-      const isHovered = hoveredEntity === entity.id
-      const radius = 20 + entity.mentions * 3
-
-      // Glow
-      if (isHovered) {
-        const gradient = ctx.createRadialGradient(ex, ey, 0, ex, ey, radius * 2)
-        gradient.addColorStop(0, style.bg)
-        gradient.addColorStop(1, "transparent")
-        ctx.fillStyle = gradient
-        ctx.beginPath()
-        ctx.arc(ex, ey, radius * 2, 0, Math.PI * 2)
-        ctx.fill()
+        ctx.fillStyle = isA || isH ? c.fill : "rgba(255,255,255,0.35)"
+        ctx.fillText(n.label, n.x, n.y + r + 16)
       }
 
-      // Node circle
-      ctx.beginPath()
-      ctx.arc(ex, ey, radius, 0, Math.PI * 2)
-      ctx.fillStyle = isHovered ? style.bg : "rgba(15,17,23,0.8)"
-      ctx.fill()
-      ctx.strokeStyle = isHovered ? style.color : "rgba(255,255,255,0.1)"
-      ctx.lineWidth = isHovered ? 2 : 1
-      ctx.stroke()
-
-      // Label
-      ctx.font = `${isHovered ? "bold " : ""}11px system-ui`
-      ctx.fillStyle = isHovered ? style.color : "rgba(255,255,255,0.6)"
-      ctx.textAlign = "center"
-      ctx.fillText(entity.name, ex, ey + radius + 16)
-    })
-  }, [hoveredEntity])
-
-  const handleCanvasHover = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const rect = canvas.getBoundingClientRect()
-    const mx = e.clientX - rect.left
-    const my = e.clientY - rect.top
-    const scaleX = rect.width / 780
-    const scaleY = rect.height / 520
-
-    let found: string | null = null
-    for (const entity of entities) {
-      const ex = entity.x * scaleX
-      const ey = entity.y * scaleY
-      const radius = 20 + entity.mentions * 3
-      const dist = Math.sqrt((mx - ex) ** 2 + (my - ey) ** 2)
-      if (dist < radius + 10) {
-        found = entity.id
-        break
-      }
+      animRef.current = requestAnimationFrame(draw)
     }
-    setHoveredEntity(found)
-  }
 
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const rect = canvas.getBoundingClientRect()
-    const mx = e.clientX - rect.left
-    const my = e.clientY - rect.top
-    const scaleX = rect.width / 780
-    const scaleY = rect.height / 520
+    animRef.current = requestAnimationFrame(draw)
 
-    for (const entity of entities) {
-      const ex = entity.x * scaleX
-      const ey = entity.y * scaleY
-      const radius = 20 + entity.mentions * 3
-      const dist = Math.sqrt((mx - ex) ** 2 + (my - ey) ** 2)
-      if (dist < radius + 10) {
-        setSelectedEntity(entity)
-        return
-      }
+    return () => {
+      cancelAnimationFrame(animRef.current)
+      window.removeEventListener("resize", resize)
+      canvas.removeEventListener("mousemove", onMove)
     }
-    setSelectedEntity(null)
+  }, [active, init])
+
+  const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const nodes = nodesRef.current
+    const rect = canvasRef.current!.getBoundingClientRect()
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top
+    for (const n of nodes) {
+      const dx = mx - n.x, dy = my - n.y
+      if (Math.sqrt(dx * dx + dy * dy) < n.radius + 8) { setActive(n.id); return }
+    }
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Graph canvas */}
-      <Card className="lg:col-span-2 bg-card border-border overflow-hidden">
-        <CardContent className="p-0">
-          <canvas
-            ref={canvasRef}
-            className="w-full h-[480px] cursor-crosshair"
-            onMouseMove={handleCanvasHover}
-            onClick={handleCanvasClick}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Entity details panel */}
-      <div className="flex flex-col gap-4">
-        {/* Legend */}
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-sans font-semibold text-foreground">Legend</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-2">
-              {(Object.entries(typeStyles) as [EntityType, typeof typeStyles.person][]).map(
-                ([type, style]) => (
-                  <div key={type} className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: style.color }}
-                    />
-                    <span className="text-xs font-sans capitalize text-muted-foreground">
-                      {type}
-                    </span>
-                  </div>
-                )
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Selected entity info */}
-        <Card className="bg-card border-border flex-1">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-sans font-semibold text-foreground flex items-center gap-2">
-              <Info className="w-4 h-4 text-muted-foreground" />
-              Entity Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {selectedEntity ? (
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center gap-3">
-                  {(() => {
-                    const Icon = typeStyles[selectedEntity.type].icon
-                    return (
-                      <div
-                        className="flex items-center justify-center w-10 h-10 rounded-lg"
-                        style={{ backgroundColor: typeStyles[selectedEntity.type].bg }}
-                      >
-                        <Icon
-                          className="w-5 h-5"
-                          style={{ color: typeStyles[selectedEntity.type].color }}
-                        />
-                      </div>
-                    )
-                  })()}
-                  <div>
-                    <p className="text-sm font-sans font-semibold text-foreground">
-                      {selectedEntity.name}
-                    </p>
-                    <Badge variant="outline" className={typeBadgeColors[selectedEntity.type]}>
-                      {selectedEntity.type}
-                    </Badge>
-                  </div>
-                </div>
-
-                <div className="pt-2 border-t border-border">
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Mentioned {selectedEntity.mentions} time{selectedEntity.mentions !== 1 ? "s" : ""} across evidence
-                  </p>
-                  <p className="text-[10px] font-sans tracking-[0.15em] uppercase text-muted-foreground mb-1">
-                    Connections
-                  </p>
-                  <ul className="flex flex-col gap-1">
-                    {connections
-                      .filter(
-                        (c) =>
-                          c.from === selectedEntity.id || c.to === selectedEntity.id
-                      )
-                      .map((c, i) => {
-                        const otherId =
-                          c.from === selectedEntity.id ? c.to : c.from
-                        const other = entities.find((e) => e.id === otherId)
-                        return (
-                          <li key={i} className="text-xs text-muted-foreground">
-                            <span className="text-foreground">{c.label}</span>{" "}
-                            {other?.name}
-                          </li>
-                        )
-                      })}
-                  </ul>
-                </div>
-              </div>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                Click on an entity node in the graph to view its details and connections.
-              </p>
-            )}
-          </CardContent>
-        </Card>
+    <div className="relative w-full h-full rounded-xl overflow-hidden glass-neon noise-overlay">
+      <canvas ref={canvasRef} className="w-full h-full cursor-crosshair" onClick={handleClick} />
+      {/* Legend */}
+      <div className="absolute top-3 left-3 flex gap-4 z-10">
+        {Object.entries(TYPE_COLORS).map(([type, c]) => (
+          <div key={type} className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full" style={{ background: c.fill, boxShadow: `0 0 6px ${c.glow}` }} />
+            <span className="text-[9px] font-mono uppercase tracking-widest text-white/30 capitalize">{type}</span>
+          </div>
+        ))}
       </div>
+      {/* Active info chip */}
+      {active && (() => {
+        const n = NODES.find(nd => nd.id === active)!
+        return (
+          <div className="absolute bottom-3 left-3 z-10 glass rounded-lg px-3 py-2 border border-white/[0.04]">
+            <p className="text-[9px] font-mono tracking-widest uppercase text-white/30">Selected</p>
+            <p className="text-sm font-semibold mt-0.5" style={{ color: TYPE_COLORS[n.type].fill }}>{n.label}</p>
+            <p className="text-[10px] text-white/30 font-mono capitalize">{n.type} &middot; {n.connections.length} links</p>
+          </div>
+        )
+      })()}
     </div>
   )
 }

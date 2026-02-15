@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
@@ -18,6 +17,7 @@ import {
   Users,
   AlertTriangle,
 } from "lucide-react"
+import { AnimatedCounter } from "@/components/effects/animated-counter"
 
 const narrativeParagraphs = [
   "The night of February 10th, 2026 began like any other at the Meridian Research Facility\u2014silent corridors, humming servers, and the steady pulse of fluorescent lights. But somewhere between 9:14 PM and 9:45 PM, the ordinary fractured into something far more calculated.",
@@ -97,13 +97,13 @@ export function NarrativeView() {
       {/* Main narrative */}
       <div className="lg:col-span-2 flex flex-col gap-6">
         {/* Audio player */}
-        <Card className="bg-card border-border">
-          <CardContent className="py-4 px-5">
+        <div className="rounded-xl glass-neon overflow-hidden relative">
+          <div className="py-5 px-6">
             <div className="flex items-center gap-4">
               <Button
                 size="sm"
                 variant={isPlaying ? "secondary" : "default"}
-                className="w-9 h-9 p-0"
+                className={`w-10 h-10 p-0 rounded-lg ${!isPlaying ? "glow-cyan-sm" : ""}`}
                 onClick={isPlaying ? stopNarration : startNarration}
                 aria-label={isPlaying ? "Pause narration" : "Play narration"}
               >
@@ -115,10 +115,13 @@ export function NarrativeView() {
               </Button>
 
               <div className="flex-1">
-                <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+                <div className="h-2 rounded-full glass-inset overflow-hidden">
                   <div
-                    className="h-full bg-primary rounded-full transition-all duration-500"
-                    style={{ width: `${progress}%` }}
+                    className="h-full rounded-full bg-gradient-to-r from-primary/70 to-primary transition-all duration-500"
+                    style={{
+                      width: `${progress}%`,
+                      boxShadow: progress > 0 ? "0 0 12px hsla(170, 100%, 45%, 0.4)" : "none",
+                    }}
                   />
                 </div>
               </div>
@@ -126,7 +129,7 @@ export function NarrativeView() {
               <Button
                 size="sm"
                 variant="ghost"
-                className="w-9 h-9 p-0 text-muted-foreground"
+                className="w-10 h-10 p-0 text-muted-foreground hover:text-primary"
                 onClick={() => setIsMuted(!isMuted)}
                 aria-label={isMuted ? "Unmute" : "Mute"}
               >
@@ -137,160 +140,160 @@ export function NarrativeView() {
                 )}
               </Button>
 
-              <span className="text-[10px] font-sans text-muted-foreground whitespace-nowrap">
+              <span className="text-[10px] font-sans text-muted-foreground whitespace-nowrap tracking-wide">
                 Narrated by ElevenLabs AI
               </span>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Narrative text */}
-        <Card className="bg-card border-border">
-          <CardHeader className="flex flex-row items-center justify-between pb-4">
-            <CardTitle className="text-sm font-sans font-semibold text-foreground">
+        <div className="rounded-xl glass-panel glass-panel-hover overflow-hidden relative">
+          <div className="flex items-center justify-between px-6 pt-6 pb-4">
+            <h3 className="text-sm font-sans font-semibold text-foreground">
               Investigative Summary
-            </CardTitle>
+            </h3>
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleCopy}
-                className="gap-1.5 text-xs text-muted-foreground"
+                className="gap-1.5 text-xs text-muted-foreground hover:text-primary"
               >
-                {copied ? (
-                  <Check className="w-3 h-3" />
-                ) : (
-                  <Copy className="w-3 h-3" />
-                )}
+                {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                 {copied ? "Copied" : "Copy"}
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                className="gap-1.5 text-xs text-muted-foreground"
+                className="gap-1.5 text-xs text-muted-foreground hover:text-primary"
               >
                 <Download className="w-3 h-3" />
                 Export
               </Button>
             </div>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className="px-6 pb-6">
             <div className="flex flex-col gap-6">
               {narrativeParagraphs.map((paragraph, index) => (
                 <p
                   key={index}
-                  className={`text-sm leading-relaxed font-sans transition-all duration-500 ${
+                  className={`text-sm leading-relaxed font-sans transition-all duration-700 ${
                     currentParagraph === index
-                      ? "text-foreground bg-primary/5 -mx-3 px-3 py-2 rounded-md border-l-2 border-primary"
+                      ? "text-foreground bg-primary/[0.04] -mx-4 px-4 py-3 rounded-lg border-l-2 border-primary"
                       : currentParagraph >= 0 && currentParagraph !== index
-                      ? "text-muted-foreground/50"
+                      ? "text-muted-foreground/30"
                       : "text-muted-foreground"
                   }`}
+                  style={
+                    currentParagraph === index
+                      ? { boxShadow: "inset 0 0 30px -15px hsla(170, 100%, 45%, 0.08)" }
+                      : {}
+                  }
                 >
                   {paragraph}
                 </p>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Sidebar */}
       <div className="flex flex-col gap-4">
         {/* Case metadata */}
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-sans font-semibold text-foreground flex items-center gap-2">
-              <FileText className="w-4 h-4 text-muted-foreground" />
-              Case Metadata
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <dl className="flex flex-col gap-3">
-              {[
-                { label: "Case ID", value: caseMetadata.caseId },
-                { label: "Classification", value: caseMetadata.classification },
-                { label: "Generated", value: caseMetadata.generated },
-              ].map((item) => (
-                <div key={item.label}>
-                  <dt className="text-[10px] font-sans tracking-[0.15em] uppercase text-muted-foreground">
-                    {item.label}
-                  </dt>
-                  <dd className="text-sm font-sans text-foreground mt-0.5">{item.value}</dd>
-                </div>
-              ))}
-            </dl>
+        <div className="rounded-xl glass-neon p-5 relative">
+          <h3 className="text-sm font-sans font-semibold text-foreground flex items-center gap-2 mb-4">
+            <FileText className="w-4 h-4 text-muted-foreground" />
+            Case Metadata
+          </h3>
 
-            <Separator className="my-4" />
-
-            <div className="grid grid-cols-3 gap-3 text-center">
-              {[
-                { icon: FileText, label: "Sources", value: caseMetadata.evidenceSources },
-                { icon: Clock, label: "Events", value: caseMetadata.eventsAnalyzed },
-                { icon: Users, label: "Entities", value: caseMetadata.entitiesIdentified },
-              ].map((stat) => (
-                <div key={stat.label} className="flex flex-col items-center gap-1">
-                  <stat.icon className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span className="text-lg font-sans font-bold text-foreground">{stat.value}</span>
-                  <span className="text-[10px] text-muted-foreground">{stat.label}</span>
-                </div>
-              ))}
-            </div>
-
-            <Separator className="my-4" />
-
-            <div>
-              <p className="text-[10px] font-sans tracking-[0.15em] uppercase text-muted-foreground mb-2">
-                AI Confidence
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-primary rounded-full"
-                    style={{ width: `${caseMetadata.confidenceScore}%` }}
-                  />
-                </div>
-                <span className="text-sm font-sans font-bold text-primary">
-                  {caseMetadata.confidenceScore}%
-                </span>
+          <dl className="flex flex-col gap-3">
+            {[
+              { label: "Case ID", value: caseMetadata.caseId },
+              { label: "Classification", value: caseMetadata.classification },
+              { label: "Generated", value: caseMetadata.generated },
+            ].map((item) => (
+              <div key={item.label}>
+                <dt className="text-[10px] font-sans tracking-[0.25em] uppercase text-muted-foreground">
+                  {item.label}
+                </dt>
+                <dd className="text-sm font-sans text-foreground mt-0.5">{item.value}</dd>
               </div>
+            ))}
+          </dl>
+
+          <Separator className="my-4 bg-border/40" />
+
+          <div className="grid grid-cols-3 gap-3 text-center">
+            {[
+              { icon: FileText, label: "Sources", value: caseMetadata.evidenceSources },
+              { icon: Clock, label: "Events", value: caseMetadata.eventsAnalyzed },
+              { icon: Users, label: "Entities", value: caseMetadata.entitiesIdentified },
+            ].map((stat) => (
+              <div key={stat.label} className="flex flex-col items-center gap-1.5 p-2 rounded-lg glass-inset">
+                <stat.icon className="w-3.5 h-3.5 text-primary/50" />
+                <span className="text-xl font-sans font-bold text-foreground">
+                  <AnimatedCounter value={stat.value} />
+                </span>
+                <span className="text-[10px] text-muted-foreground">{stat.label}</span>
+              </div>
+            ))}
+          </div>
+
+          <Separator className="my-4 bg-border/40" />
+
+          <div>
+            <p className="text-[10px] font-sans tracking-[0.25em] uppercase text-muted-foreground mb-2.5">
+              AI Confidence
+            </p>
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-2 rounded-full glass-inset overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-primary/70 to-primary"
+                  style={{
+                    width: `${caseMetadata.confidenceScore}%`,
+                    boxShadow: "0 0 12px hsla(170, 100%, 45%, 0.3)",
+                  }}
+                />
+              </div>
+              <span className="text-sm font-sans font-bold text-primary drop-shadow-[0_0_8px_hsla(170,100%,45%,0.5)]">
+                <AnimatedCounter value={caseMetadata.confidenceScore} suffix="%" />
+              </span>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Key findings */}
-        <Card className="bg-card border-border">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-sans font-semibold text-foreground flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-muted-foreground" />
-              Key Findings
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="flex flex-col gap-2.5">
-              {keyFindings.map((finding, i) => (
-                <li key={i} className="flex items-start gap-2.5">
-                  <div className="mt-1 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-primary" />
-                  <div className="flex-1">
-                    <p className="text-xs leading-relaxed text-muted-foreground">
-                      {finding.label}
-                    </p>
-                  </div>
-                  <Badge
-                    variant="outline"
-                    className={
-                      finding.severity === "critical"
-                        ? "bg-red-500/10 text-red-400 border-red-500/20 text-[10px]"
-                        : "bg-primary/10 text-primary border-primary/20 text-[10px]"
-                    }
-                  >
-                    {finding.severity}
-                  </Badge>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+        <div className="rounded-xl glass-panel glass-panel-hover p-5 relative">
+          <h3 className="text-sm font-sans font-semibold text-foreground flex items-center gap-2 mb-4">
+            <AlertTriangle className="w-4 h-4 text-muted-foreground" />
+            Key Findings
+          </h3>
+
+          <ul className="flex flex-col gap-3">
+            {keyFindings.map((finding, i) => (
+              <li key={i} className="flex items-start gap-3 group">
+                <div className="mt-1.5 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-primary group-hover:glow-cyan-sm transition-shadow" />
+                <div className="flex-1">
+                  <p className="text-xs leading-relaxed text-muted-foreground group-hover:text-foreground transition-colors">
+                    {finding.label}
+                  </p>
+                </div>
+                <Badge
+                  variant="outline"
+                  className={
+                    finding.severity === "critical"
+                      ? "bg-red-500/10 text-red-400 border-red-500/20 text-[10px]"
+                      : "bg-primary/10 text-primary border-primary/20 text-[10px]"
+                  }
+                >
+                  {finding.severity}
+                </Badge>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   )

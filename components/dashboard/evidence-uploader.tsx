@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Upload, FileVideo, FileText, Mic, X, CheckCircle, Loader2 } from "lucide-react"
@@ -14,15 +13,11 @@ type EvidenceFile = {
   status: "queued" | "uploading" | "processing" | "complete"
 }
 
-const typeIcons = {
-  video: FileVideo,
-  text: FileText,
-  audio: Mic,
-}
+const typeIcons = { video: FileVideo, text: FileText, audio: Mic }
 
 const typeColors = {
   video: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  text: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+  text: "bg-primary/10 text-primary border-primary/20",
   audio: "bg-amber-500/10 text-amber-400 border-amber-500/20",
 }
 
@@ -62,8 +57,6 @@ export function EvidenceUploader() {
     setFiles((prev) =>
       prev.map((f) => (f.status === "queued" ? { ...f, status: "uploading" as const } : f))
     )
-
-    // Simulate sequential processing
     files.forEach((file, i) => {
       if (file.status !== "queued") return
       setTimeout(() => {
@@ -71,7 +64,6 @@ export function EvidenceUploader() {
           prev.map((f) => (f.id === file.id ? { ...f, status: "processing" } : f))
         )
       }, 1000 + i * 800)
-
       setTimeout(() => {
         setFiles((prev) =>
           prev.map((f) => (f.id === file.id ? { ...f, status: "complete" } : f))
@@ -94,9 +86,11 @@ export function EvidenceUploader() {
   return (
     <div className="flex flex-col gap-6 max-w-3xl">
       {/* Drop zone */}
-      <Card
-        className={`border-2 border-dashed transition-colors cursor-pointer ${
-          isDragging ? "border-primary bg-primary/5" : "border-border bg-card/30"
+      <div
+        className={`relative rounded-xl border-2 border-dashed transition-all duration-300 cursor-pointer group overflow-hidden ${
+          isDragging
+            ? "border-primary bg-primary/[0.03] scale-[1.01]"
+            : "border-border/40 glass-panel hover:border-primary/20"
         }`}
         onDragOver={(e) => {
           e.preventDefault()
@@ -106,18 +100,24 @@ export function EvidenceUploader() {
         onDrop={handleDrop}
         onClick={() => document.getElementById("file-input")?.click()}
       >
-        <CardContent className="flex flex-col items-center justify-center py-16">
-          <div className="flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 border border-primary/20 mb-5">
-            <Upload className="w-6 h-6 text-primary" />
+        {isDragging && (
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-primary/10 blur-[100px] animate-glow-pulse" />
           </div>
-          <p className="text-sm font-sans font-medium text-foreground mb-1">
+        )}
+
+        <div className="relative flex flex-col items-center justify-center py-20">
+          <div className="flex items-center justify-center w-16 h-16 rounded-2xl glass-inset mb-6 group-hover:glow-cyan-sm transition-all duration-500 group-hover:scale-110">
+            <Upload className="w-7 h-7 text-primary" />
+          </div>
+          <p className="text-sm font-sans font-medium text-foreground mb-1.5">
             Drop evidence files here or click to browse
           </p>
           <p className="text-xs text-muted-foreground">
             Supports video (MP4, AVI), text (TXT, PDF, LOG), and audio (WAV, MP3)
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <input
         id="file-input"
@@ -129,7 +129,7 @@ export function EvidenceUploader() {
         }}
       />
 
-      {/* Accepted file types */}
+      {/* File type badges */}
       <div className="flex flex-wrap gap-3">
         {[
           { icon: FileVideo, label: "Video", exts: "MP4, AVI, MOV" },
@@ -138,9 +138,9 @@ export function EvidenceUploader() {
         ].map((t) => (
           <div
             key={t.label}
-            className="flex items-center gap-2 px-3 py-2 rounded-md bg-secondary/30 border border-border"
+            className="flex items-center gap-2.5 px-4 py-2.5 rounded-lg glass-inset hover:border-primary/15 transition-colors"
           >
-            <t.icon className="w-3.5 h-3.5 text-muted-foreground" />
+            <t.icon className="w-3.5 h-3.5 text-primary/60" />
             <span className="text-xs text-muted-foreground">
               <span className="text-foreground font-medium">{t.label}</span> &middot; {t.exts}
             </span>
@@ -150,13 +150,13 @@ export function EvidenceUploader() {
 
       {/* File list */}
       {files.length > 0 && (
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between mb-2">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center justify-between mb-1">
             <p className="text-sm font-sans font-medium text-foreground">
               {files.length} file{files.length !== 1 ? "s" : ""} selected
             </p>
             {hasQueued && (
-              <Button size="sm" onClick={simulateUpload} className="gap-2">
+              <Button size="sm" onClick={simulateUpload} className="gap-2 glow-cyan-sm">
                 <Upload className="w-3 h-3" />
                 Process All
               </Button>
@@ -168,9 +168,9 @@ export function EvidenceUploader() {
             return (
               <div
                 key={file.id}
-                className="flex items-center gap-4 p-3 rounded-md bg-card border border-border"
+                className="flex items-center gap-4 p-4 rounded-lg glass-panel hover:border-primary/15 transition-all group"
               >
-                <div className="flex items-center justify-center w-9 h-9 rounded-md bg-primary/10">
+                <div className="flex items-center justify-center w-10 h-10 rounded-lg glass-inset group-hover:glow-cyan-sm transition-all duration-500">
                   <Icon className="w-4 h-4 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -184,8 +184,8 @@ export function EvidenceUploader() {
                 </Badge>
                 {file.status === "queued" && (
                   <button
-                    onClick={() => removeFile(file.id)}
-                    className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+                    onClick={(e) => { e.stopPropagation(); removeFile(file.id) }}
+                    className="p-1.5 text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-secondary/50"
                     aria-label="Remove file"
                   >
                     <X className="w-4 h-4" />
@@ -198,7 +198,7 @@ export function EvidenceUploader() {
                   <Loader2 className="w-4 h-4 text-amber-400 animate-spin" />
                 )}
                 {file.status === "complete" && (
-                  <CheckCircle className="w-4 h-4 text-emerald-400" />
+                  <CheckCircle className="w-4 h-4 text-primary drop-shadow-[0_0_8px_hsla(170,100%,45%,0.5)]" />
                 )}
               </div>
             )

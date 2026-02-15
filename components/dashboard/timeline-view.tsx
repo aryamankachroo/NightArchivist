@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { FileVideo, FileText, Mic, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react"
@@ -76,16 +75,27 @@ const events: TimelineEvent[] = [
   },
 ]
 
-const sourceIcons = {
-  video: FileVideo,
-  text: FileText,
-  audio: Mic,
-}
+const sourceIcons = { video: FileVideo, text: FileText, audio: Mic }
 
-const severityStyles = {
-  normal: "bg-secondary text-muted-foreground",
-  important: "bg-primary/10 text-primary border-primary/20",
-  critical: "bg-red-500/10 text-red-400 border-red-500/20",
+const severityConfig = {
+  normal: {
+    badge: "bg-secondary/60 text-muted-foreground border-border/30",
+    node: "glass-inset",
+    glow: "",
+    cardClass: "glass-panel glass-panel-hover",
+  },
+  important: {
+    badge: "bg-primary/10 text-primary border-primary/20",
+    node: "bg-primary/[0.08] border-primary/25",
+    glow: "shadow-[0_0_18px_-3px_hsla(170,100%,45%,0.3)]",
+    cardClass: "glass-panel glass-panel-hover",
+  },
+  critical: {
+    badge: "bg-red-500/10 text-red-400 border-red-500/20",
+    node: "bg-red-500/[0.08] border-red-500/25",
+    glow: "shadow-[0_0_18px_-3px_hsla(0,72%,51%,0.3)]",
+    cardClass: "glass-neon",
+  },
 }
 
 export function TimelineView() {
@@ -93,27 +103,28 @@ export function TimelineView() {
 
   return (
     <div className="relative max-w-3xl">
-      {/* Vertical line */}
-      <div className="absolute left-[19px] top-0 bottom-0 w-px bg-border" />
+      {/* Glowing vertical line */}
+      <div className="absolute left-[22px] top-0 bottom-0 w-px">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/30 via-primary/10 to-border" />
+        <div className="absolute top-0 left-0 w-px h-16 bg-primary/40" style={{ boxShadow: "0 0 8px hsla(170, 100%, 45%, 0.3)" }} />
+      </div>
 
-      <div className="flex flex-col gap-6">
-        {events.map((event, index) => {
+      <div className="flex flex-col gap-8">
+        {events.map((event) => {
           const Icon = sourceIcons[event.source]
           const isExpanded = expandedId === event.id
-          const isLast = index === events.length - 1
+          const config = severityConfig[event.severity]
 
           return (
-            <div key={event.id} className="relative flex gap-5">
+            <div key={event.id} className="relative flex gap-6 group">
               {/* Timeline node */}
               <div className="relative z-10 flex-shrink-0">
                 <div
                   className={cn(
-                    "flex items-center justify-center w-10 h-10 rounded-full border",
-                    event.severity === "critical"
-                      ? "bg-red-500/10 border-red-500/30"
-                      : event.severity === "important"
-                      ? "bg-primary/10 border-primary/30"
-                      : "bg-card border-border"
+                    "flex items-center justify-center w-11 h-11 rounded-full border transition-all duration-500",
+                    config.node,
+                    config.glow,
+                    "group-hover:scale-110"
                   )}
                 >
                   {event.severity === "critical" ? (
@@ -122,33 +133,30 @@ export function TimelineView() {
                     <Icon className="w-4 h-4 text-primary" />
                   )}
                 </div>
-                {!isLast && <div className="absolute left-1/2 top-10 bottom-0 -translate-x-1/2 w-px" />}
               </div>
 
-              {/* Event card */}
-              <Card className="flex-1 bg-card/50 border-border hover:border-primary/20 transition-colors">
-                <CardContent className="p-5">
-                  <div className="flex items-start justify-between gap-3 mb-2">
+              {/* Event card — glass panel */}
+              <div className={cn("flex-1 rounded-xl overflow-hidden transition-all duration-300 relative", config.cardClass)}>
+                <div className="p-6">
+                  <div className="flex items-start justify-between gap-3 mb-3">
                     <div>
-                      <p className="text-[10px] font-sans tracking-[0.15em] text-muted-foreground font-mono">
+                      <p className="text-[10px] font-mono tracking-[0.2em] text-primary/60">
                         {event.timestamp}
                       </p>
-                      <h3 className="mt-1 text-sm font-sans font-semibold text-foreground">
+                      <h3 className="mt-1.5 text-sm font-sans font-semibold text-foreground">
                         {event.title}
                       </h3>
                     </div>
-                    <Badge variant="outline" className={severityStyles[event.severity]}>
+                    <Badge variant="outline" className={cn("text-[10px]", config.badge)}>
                       {event.severity}
                     </Badge>
                   </div>
 
-                  {/* Source tag */}
                   <div className="flex items-center gap-2 mb-3">
                     <Icon className="w-3 h-3 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">{event.sourceFile}</span>
                   </div>
 
-                  {/* Description (collapsible) */}
                   <p
                     className={cn(
                       "text-sm leading-relaxed text-muted-foreground transition-all",
@@ -158,13 +166,12 @@ export function TimelineView() {
                     {event.description}
                   </p>
 
-                  {/* Entity tags + expand button */}
-                  <div className="flex items-center justify-between mt-3">
+                  <div className="flex items-center justify-between mt-4">
                     <div className="flex flex-wrap gap-1.5">
                       {event.entities.map((entity) => (
                         <span
                           key={entity}
-                          className="px-2 py-0.5 text-[10px] font-sans rounded-full bg-secondary text-muted-foreground border border-border"
+                          className="px-2.5 py-1 text-[10px] font-sans rounded-full glass-inset text-primary/70 border border-primary/10"
                         >
                           {entity}
                         </span>
@@ -174,7 +181,7 @@ export function TimelineView() {
                       variant="ghost"
                       size="sm"
                       onClick={() => setExpandedId(isExpanded ? null : event.id)}
-                      className="p-1 h-auto text-muted-foreground hover:text-foreground"
+                      className="p-1.5 h-auto text-muted-foreground hover:text-primary"
                     >
                       {isExpanded ? (
                         <ChevronUp className="w-4 h-4" />
@@ -183,8 +190,8 @@ export function TimelineView() {
                       )}
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           )
         })}
