@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --noir-bg: #0d0d0d;
+  --noir-card: #1a1a1a;
+  --noir-border: #333;
+  --noir-text: #e5e5e5;
+  --noir-muted: #888;
+  --noir-accent: #c9a227;
+}
+
+body {
+  background-color: var(--noir-bg);
+  color: var(--noir-text);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
